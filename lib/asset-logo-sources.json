@@ -1,0 +1,26 @@
+{
+  "btc": {
+    "provider": "CoinGecko",
+    "api": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=nervos-network,bitcoin,ethereum,tether",
+    "source": "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400",
+    "path": "/markets/btc.png"
+  },
+  "eth": {
+    "provider": "CoinGecko",
+    "api": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=nervos-network,bitcoin,ethereum,tether",
+    "source": "https://coin-images.coingecko.com/coins/images/279/large/ethereum.png?1696501628",
+    "path": "/markets/eth.png"
+  },
+  "usdt": {
+    "provider": "CoinGecko",
+    "api": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=nervos-network,bitcoin,ethereum,tether",
+    "source": "https://coin-images.coingecko.com/coins/images/325/large/Tether.png?1696501661",
+    "path": "/markets/usdt.png"
+  },
+  "ckb": {
+    "provider": "CoinGecko",
+    "api": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=nervos-network,bitcoin,ethereum,tether",
+    "source": "https://coin-images.coingecko.com/coins/images/9566/large/Nervos_White.png?1696509646",
+    "path": "/markets/ckb.png"
+  }
+}
