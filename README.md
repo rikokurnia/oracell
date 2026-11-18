@@ -23,16 +23,16 @@ Oracell brings market exploration and CKB integration documentation into one foc
 | Page | Route | Features |
 | --- | --- | --- |
 | Landing | `/` | Product introduction, floating jade artwork, and links to the explorer and documentation. |
-| Market Data | `/markets` | CKB/USD, BTC/USD, ETH/USD, and USDT/USD; search, asset filters, sortable prices, and seven-day trend charts. |
+| Market Data | `/markets` | CKB/USDT, BTC/USDT, ETH/USDT, and SOL/USDT; signed feed snapshots, source counts, CKB anchors, search, filters, and sorting. |
 | Build Documentation | `/docs` | Integration guides, section navigation, documentation search, source viewing, and copy controls. |
 
-The interface includes keyboard navigation, visible focus states, mobile sidebar drawers, and a horizontally scrollable market table. The hero animation respects reduced-motion preferences.
+The interface includes keyboard navigation, visible focus states, an expandable desktop icon rail, mobile sidebar drawers, and a horizontally scrollable market table. The hero animation respects reduced-motion preferences.
 
 ## Getting started
 
 ### Requirements
 
-- Node.js 22 or later
+- Node.js 22.18 or later
 - npm
 
 ### Local development
@@ -44,7 +44,7 @@ npm ci
 npm run dev
 ```
 
-Open [localhost:3000](http://localhost:3000). No environment variables or API keys are required.
+Open [localhost:3000](http://localhost:3000). The frontend defaults to the aggregator at `http://localhost:4001`. For a hosted aggregator, set `NEXT_PUBLIC_ORACELL_AGGREGATOR_URL` in `.env.local` before building. Use an HTTPS URL when hosting the frontend over HTTPS; public environment values are embedded at build time. No API key is required by the aggregator.
 
 ### Production
 
@@ -59,6 +59,7 @@ npm start
 | --- | --- |
 | `npm run dev` | Start the development server. |
 | `npm run lint` | Run ESLint. |
+| `npm test` | Check feed decoding, precision, malformed responses, and hosted fallback behavior. |
 | `npm run typecheck` | Generate Next.js route types and check TypeScript. |
 | `npm run build` | Build the application for production. |
 | `npm start` | Serve the production build. |
@@ -75,7 +76,9 @@ artifacts/    Desktop and mobile captures with visual comparisons
 
 ## Data and assets
 
-Market prices and trend data are defined in `lib/markets.ts`. Documentation content lives in `lib/docs.ts`. This repository contains the frontend; live price delivery, wallet connections, on-chain verification, and an executable SDK are separate integrations.
+The frontend polls `GET /v1/oracle/feeds` every five seconds using the URL configured by `NEXT_PUBLIC_ORACELL_AGGREGATOR_URL`. `lib/markets.ts` defines the supported market catalog, response validation, and precise decimal display. Unavailable services leave the catalog usable without invented prices; connection interruptions preserve the last received snapshot with a notice. Hosted builds without an aggregator URL do not contact the visitor’s localhost. Historical price returns are not supplied by this endpoint and are not displayed.
+
+Documentation in `lib/docs.ts` follows the implementation in `packages/sdk/` and `contracts/`. The frontend does not verify Schnorr signatures or submit transactions; consuming applications should use a trusted publisher key with the SDK and their deployed CKB verifier. Backend, SDK, and contract builds are separate from the Next.js frontend build.
 
 Asset logos are sourced from the CoinGecko API and cached in `public/markets/`. Original API and image URLs are recorded in [`lib/asset-logo-sources.json`](lib/asset-logo-sources.json). Asset names and logos belong to their respective owners.
 
@@ -83,6 +86,6 @@ Oracell branding and transparent artwork are stored in `public/`. The Open O mar
 
 ## Visual verification
 
-The [`artifacts/`](artifacts/) directory includes captures at desktop (1672 × 941) and mobile (390 × 844) sizes. Comparison images place the reference on the left and the implementation on the right.
+The [`artifacts/`](artifacts/) directory includes captures at desktop (1672 × 941) and mobile (390 × 844) sizes. Laptop captures at 1280 × 640 show the compact interface at normal zoom, including both the icon rail and expanded sidebar. The comparison images preserve the original reference comparison.
 
 Browser verification covers navigation, market search and filters, price sorting, empty results, sidebar behavior, documentation anchors, clipboard actions, and responsive layouts.

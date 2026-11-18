@@ -3,7 +3,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { Copy, Check, Code, ArrowRight } from "lucide-react";
 import { Shell } from "@/components/shell";
-import { docsSections, sdkCode, pageText } from "@/lib/docs";
+import {
+  docsSections,
+  sdkCode,
+  pageText,
+  payloadFields,
+  verifierErrors,
+} from "@/lib/docs";
 function CopyButton({
   text,
   label,
@@ -42,7 +48,9 @@ export default function Docs() {
     { id: "start-with-the-sdk", title: "Start with the SDK", body: sdkCode },
     ...docsSections,
   ].filter((s) =>
-    `${s.title} ${s.body}`.toLowerCase().includes(query.toLowerCase()),
+    `${s.title} ${s.body} ${s.id === "payload-structure" ? payloadFields.flat().join(" ") : ""} ${s.id === "verifier-errors" ? verifierErrors.flat().join(" ") : ""}`
+      .toLowerCase()
+      .includes(query.toLowerCase()),
   );
   return (
     <Shell mode="docs" query={query} onQuery={setQuery}>
@@ -100,25 +108,7 @@ export default function Docs() {
                 />
               </div>
               <pre>
-                <code>
-                  <span className="syntax-key">import</span>
-                  {" { OracellClient } "}
-                  <span className="syntax-key">from</span>{" "}
-                  <span className="syntax-string">
-                    &apos;@oracell/sdk&apos;
-                  </span>
-                  {";\n\n"}
-                  <span className="syntax-key">const</span>
-                  {" client = "}
-                  <span className="syntax-key">new</span>
-                  {" OracellClient();\n"}
-                  <span className="syntax-key">const</span>
-                  {" price = "}
-                  <span className="syntax-key">await</span>
-                  {" client.getLatestPrice("}
-                  <span className="syntax-string">&apos;CKB/USD&apos;</span>
-                  {");\n\nconsole.log(price);"}
-                </code>
+                <code>{sdkCode}</code>
               </pre>
             </div>
           </section>
@@ -126,6 +116,20 @@ export default function Docs() {
             <section className="doc-section" key={s.id} id={s.id}>
               <h2>{s.title}</h2>
               <p>{s.body}</p>
+              {s.id === "payload-structure" && (
+                <ReferenceTable
+                  caption="Canonical witness layout"
+                  headings={["Field", "Offset", "Bytes", "Encoding"]}
+                  rows={payloadFields}
+                />
+              )}
+              {s.id === "verifier-errors" && (
+                <ReferenceTable
+                  caption="CKB-VM verifier errors"
+                  headings={["Code", "Error", "Meaning"]}
+                  rows={verifierErrors}
+                />
+              )}
               {s.id === "next-steps" && (
                 <Link className="text-link" href="/markets">
                   Explore Market Data ↗
@@ -176,5 +180,46 @@ export default function Docs() {
         </div>
       )}
     </Shell>
+  );
+}
+
+function ReferenceTable({
+  caption,
+  headings,
+  rows,
+}: {
+  caption: string;
+  headings: string[];
+  rows: string[][];
+}) {
+  return (
+    <div
+      className="docs-reference-table"
+      role="region"
+      aria-label={caption}
+      tabIndex={0}
+    >
+      <table>
+        <caption>{caption}</caption>
+        <thead>
+          <tr>
+            {headings.map((h) => (
+              <th scope="col" key={h}>
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row[0]}>
+              {row.map((cell, i) => (
+                <td key={i}>{i === 0 ? <code>{cell}</code> : cell}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

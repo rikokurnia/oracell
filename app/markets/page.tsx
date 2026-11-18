@@ -4,35 +4,49 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { Shell } from "@/components/shell";
-import { markets, Market } from "@/lib/markets";
+import { useMarketFeeds } from "@/hooks/use-market-feeds";
+import {
+  getMarkets,
+  formatPrice,
+  feedAge,
+  STALE_AFTER_MS,
+  type Market,
+} from "@/lib/markets";
+
+type SortKey = "name" | "price" | "updated";
+function sortValue(m: Market, key: Exclude<SortKey, "name">) {
+  if (!m.feed) return null;
+  return key === "price"
+    ? BigInt(m.feed.payload.priceScaled)
+    : BigInt(m.feed.payload.timestampMs);
+}
 export default function Markets() {
+  const { feeds, status, now } = useMarketFeeds();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All Markets");
   const [crypto, setCrypto] = useState(true);
-  const [stable, setStable] = useState(true);
-  const [usd, setUsd] = useState(true);
-  const [sort, setSort] = useState<"name" | "price" | "change" | null>(null);
+  const [usdt, setUsdt] = useState(true);
+  const [sort, setSort] = useState<SortKey | null>(null);
   const [asc, setAsc] = useState(true);
-  const rows = markets
+  const rows = getMarkets(feeds)
     .filter(
       (m) =>
-        usd &&
-        (m.type === "Crypto" ? crypto : stable) &&
-        (category === "All Markets" ||
-          (category === "Crypto Assets"
-            ? m.type === "Crypto"
-            : m.type === "Stablecoin")) &&
-        `${m.name} ${m.symbol} ${m.feed}`
+        usdt &&
+        crypto &&
+        `${m.name} ${m.symbol} ${m.pairKey}`
           .toLowerCase()
           .includes(query.toLowerCase()),
     )
-    .sort((a, b) =>
-      !sort
-        ? 0
-        : (asc ? 1 : -1) *
-          (sort === "name" ? a.name.localeCompare(b.name) : a[sort] - b[sort]),
-    );
-  function order(key: typeof sort) {
+    .sort((a, b) => {
+      if (!sort) return 0;
+      if (sort === "name") return (asc ? 1 : -1) * a.name.localeCompare(b.name);
+      const x = sortValue(a, sort),
+        y = sortValue(b, sort);
+      if (x === null) return y === null ? 0 : 1;
+      if (y === null) return -1;
+      return (asc ? 1 : -1) * (x < y ? -1 : x > y ? 1 : 0);
+    });
+  function order(key: SortKey) {
     setAsc(sort === key ? !asc : true);
     setSort(key);
   }
@@ -40,9 +54,23 @@ export default function Markets() {
     setQuery("");
     setCategory("All Markets");
     setCrypto(true);
-    setStable(true);
-    setUsd(true);
+    setUsdt(true);
   }
+  const outdated = feeds.some(
+    (f) => now - f.payload.timestampMs > STALE_AFTER_MS,
+  );
+  const notice =
+    status === "connecting"
+      ? "Connecting to price feeds…"
+      : status === "offline"
+        ? feeds.length
+          ? "Connection unavailable · Showing last received prices."
+          : "Price feeds unavailable · Reconnecting automatically."
+        : !feeds.length
+          ? "Connected · Waiting for signed price feeds."
+          : outdated
+            ? "Connected · Some feeds have not updated recently."
+            : "Connected · Prices refresh every 5 seconds.";
   return (
     <Shell
       mode="markets"
@@ -85,62 +113,54 @@ export default function Markets() {
                 />
                 Crypto
               </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={stable}
-                  onChange={(e) => setStable(e.target.checked)}
-                />
-                Stablecoin
-              </label>
             </fieldset>
             <fieldset>
               <legend>Quote currency</legend>
               <label>
                 <input
                   type="checkbox"
-                  checked={usd}
-                  onChange={(e) => setUsd(e.target.checked)}
+                  checked={usdt}
+                  onChange={(e) => setUsdt(e.target.checked)}
                 />
-                USD
+                USDT
               </label>
             </fieldset>
           </aside>
           <div className="table-area">
-            <div className="table-scroll">
+            <div
+              className="table-scroll"
+              role="region"
+              aria-label="Market prices, scroll horizontally for more columns"
+              tabIndex={0}
+            >
               <table>
                 <thead>
                   <tr>
-                    {[
-                      ["Market", "name"],
-                      ["Price", "price"],
-                      ["24h Change", "change"],
-                    ].map(([label, key]) => (
-                      <th
+                    {(
+                      [
+                        ["Market", "name"],
+                        ["Price", "price"],
+                      ] as const
+                    ).map(([label, key]) => (
+                      <SortHeader
                         key={key}
-                        aria-sort={
-                          sort === key
-                            ? asc
-                              ? "ascending"
-                              : "descending"
-                            : "none"
-                        }
-                      >
-                        <button onClick={() => order(key as typeof sort)}>
-                          {label}
-                          {sort === key ? (
-                            asc ? (
-                              <ArrowUp size={15} />
-                            ) : (
-                              <ArrowDown size={15} />
-                            )
-                          ) : null}
-                        </button>
-                      </th>
+                        label={label}
+                        sortKey={key}
+                        sort={sort}
+                        asc={asc}
+                        order={order}
+                      />
                     ))}
-                    <th>7D Trend</th>
-                    <th>Updated</th>
-                    <th>Feed ID</th>
+                    <th>Sources</th>
+                    <th>CKB anchor</th>
+                    <SortHeader
+                      label="Updated"
+                      sortKey="updated"
+                      sort={sort}
+                      asc={asc}
+                      order={order}
+                    />
+                    <th>Pair key</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -152,8 +172,8 @@ export default function Markets() {
                             className="asset-logo"
                             src={m.logo}
                             alt={`${m.name} logo`}
-                            width={56}
-                            height={56}
+                            width={30}
+                            height={30}
                           />
                           <div>
                             <strong>{m.name}</strong>
@@ -161,25 +181,61 @@ export default function Markets() {
                           </div>
                         </div>
                       </td>
-                      <td>${m.displayPrice}</td>
-                      <td
-                        className={
-                          m.change < 0
-                            ? "negative"
-                            : m.type === "Stablecoin"
-                              ? "muted"
-                              : "positive"
-                        }
-                      >
-                        {m.change < 0 ? "−" : "+"}
-                        {Math.abs(m.change).toFixed(2)}%
+                      <td>
+                        {m.feed ? (
+                          formatPrice(m.feed.payload.priceScaled)
+                        ) : (
+                          <span
+                            className="muted"
+                            aria-label="Price unavailable"
+                          >
+                            —
+                          </span>
+                        )}
                       </td>
                       <td>
-                        <Sparkline market={m} />
+                        {m.feed ? (
+                          <span
+                            title={
+                              m.feed.payload.flags & 1
+                                ? "Includes a fallback source"
+                                : "Contributing price sources"
+                            }
+                          >
+                            {m.feed.payload.sourceCount}
+                            {m.feed.payload.flags & 2 ? " · Paused" : ""}
+                          </span>
+                        ) : (
+                          "—"
+                        )}
                       </td>
-                      <td className="muted">—</td>
                       <td>
-                        <code>{m.feed}</code>
+                        {m.feed ? (
+                          <span title={m.feed.payload.tipBlockHash}>
+                            {m.feed.payload.blockNumber.toLocaleString("en-US")}
+                          </span>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="muted">
+                        {m.feed ? (
+                          <time
+                            title={new Date(
+                              m.feed.payload.timestampMs,
+                            ).toISOString()}
+                            dateTime={new Date(
+                              m.feed.payload.timestampMs,
+                            ).toISOString()}
+                          >
+                            {feedAge(m.feed.payload.timestampMs, now)}
+                          </time>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td>
+                        <code>{m.pairKey}</code>
                       </td>
                     </tr>
                   ))}
@@ -193,29 +249,40 @@ export default function Markets() {
                 </div>
               )}
             </div>
-            <p className="table-note">Prices in USD</p>
+            <div className="feed-status">
+              <p className="table-note" role="status">
+                {notice}
+              </p>
+              <span className="table-note">Prices in USDT</span>
+            </div>
           </div>
         </div>
       </main>
     </Shell>
   );
 }
-function Sparkline({ market }: { market: Market }) {
+function SortHeader({
+  label,
+  sortKey,
+  sort,
+  asc,
+  order,
+}: {
+  label: string;
+  sortKey: SortKey;
+  sort: SortKey | null;
+  asc: boolean;
+  order: (key: SortKey) => void;
+}) {
   return (
-    <svg
-      className={`sparkline ${market.change < 0 ? "negative" : market.type === "Stablecoin" ? "muted" : "positive"}`}
-      viewBox="0 0 150 42"
-      role="img"
-      aria-label={`${market.symbol} seven-day price trend`}
+    <th
+      aria-sort={sort === sortKey ? (asc ? "ascending" : "descending") : "none"}
     >
-      <polyline
-        points={market.trend.map((y, i) => `${i * 7},${y}`).join(" ")}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    </svg>
+      <button onClick={() => order(sortKey)}>
+        {label}
+        {sort === sortKey &&
+          (asc ? <ArrowUp size={13} /> : <ArrowDown size={13} />)}
+      </button>
+    </th>
   );
 }

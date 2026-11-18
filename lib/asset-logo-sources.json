@@ -22,5 +22,11 @@
     "api": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=nervos-network,bitcoin,ethereum,tether",
     "source": "https://coin-images.coingecko.com/coins/images/9566/large/Nervos_White.png?1696509646",
     "path": "/markets/ckb.png"
+  },
+  "sol": {
+    "provider": "CoinGecko",
+    "api": "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=solana",
+    "source": "https://coin-images.coingecko.com/coins/images/4128/large/solana.png",
+    "path": "/markets/sol.png"
   }
 }
