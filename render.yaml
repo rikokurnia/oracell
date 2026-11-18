@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: oracell-aggregator
+    runtime: node
+    plan: free
+    rootDir: services/aggregator
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: ORACELL_PUBLISHER_PRIVATE_KEY
+        sync: false
