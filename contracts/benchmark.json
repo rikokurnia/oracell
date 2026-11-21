@@ -1,0 +1,4 @@
+{
+  "baseline": { "submitted": 20, "verified": 1, "conflicts": 19, "cycles": 2107 },
+  "oracell": { "submitted": 100, "verified": 100, "conflicts": 0, "minCycles": 3886926, "maxCycles": 3886926, "totalCycles": 388692600 }
+}

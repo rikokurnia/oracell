@@ -89,3 +89,11 @@ Oracell branding and transparent artwork are stored in `public/`. The Open O mar
 The [`artifacts/`](artifacts/) directory includes captures at desktop (1672 × 941) and mobile (390 × 844) sizes. Laptop captures at 1280 × 640 show the compact interface at normal zoom, including both the icon rail and expanded sidebar. The comparison images preserve the original reference comparison.
 
 Browser verification covers navigation, market search and filters, price sorting, empty results, sidebar behavior, documentation anchors, clipboard actions, and responsive layouts.
+
+## Phase 1 security scope
+
+The hosted oracle uses a single BIP-340 publisher. Threshold Schnorr signing and distributed key generation are Phase 3 work. The verifier binds the signed hash and height to a header dependency and enforces a two-block lag relative to the highest dependency supplied. The script cannot establish the latest global tip from those dependencies alone. The Pudge proof runner compares the anchor with the canonical header at that height, checks it against the RPC tip, and adds that reference header before signing. Integrators should define their own freshness and source policy.
+
+The [security sandbox](https://oracell.vercel.app/sandbox) replays CKB-VM emulator measurements and offers a hosted SDK example. Emulator admission counts are separate from the on-chain proof in [the Pudge deployment record](contracts/DEPLOYMENT.md).
+
+The SDK defaults to the hosted oracle. The public API exposes `/api/oracle/feeds` and `/api/oracle/quote?pair=CKB_USDT`, with aliases for existing SDK clients using `/v1/oracle/*`. Use [the SDK README](packages/sdk/README.md) to build and install it.

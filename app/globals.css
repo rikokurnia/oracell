@@ -1355,3 +1355,27 @@ td code {
 .docs-reference-table code {
   overflow-wrap: anywhere;
 }
+
+.sandbox-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0;
+}
+.sandbox-controls button, .sandbox-controls select {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: inherit;
+  background: var(--panel);
+}
+.sandbox-controls button[aria-pressed="true"] {
+  color: var(--forest);
+  background: var(--lime);
+}
+.sandbox-controls button:disabled { opacity: .6; cursor: wait; }
+.sandbox-controls select { margin-left: 6px; font: inherit; }
+.sandbox-measurement { padding: 12px 0; }
+.sandbox-measurement meter { display: block; width: min(360px, 100%); margin: 6px 0; }
+.sandbox-feedback { margin-top: 14px; }

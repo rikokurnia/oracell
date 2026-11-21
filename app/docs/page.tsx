@@ -95,6 +95,7 @@ export default function Docs() {
                 <span>Explore payload signatures and header dependencies.</span>
               </a>
             </div>
+            <Link className="text-link" href="/sandbox">Open security sandbox ↗</Link>
           </section>
           <section id="start-with-the-sdk">
             <h2>Start with the SDK</h2>

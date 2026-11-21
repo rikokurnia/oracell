@@ -11,3 +11,7 @@ coverage/
 
 /services/aggregator/dist/
 .vercel
+
+/contracts/target/
+/packages/sdk/dist/
+/packages/sdk/dist-hosted/

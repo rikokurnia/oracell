@@ -5,9 +5,7 @@ export const sdkCode = `import {
   type CkbTransactionSkeleton,
 } from '@oracell/sdk';
 
-const client = new OracellClient({
-  aggregatorUrl: 'http://localhost:4001',
-});
+const client = new OracellClient();
 const quote = await client.getLatestPrice('CKB/USDT');
 // Pin the publisher key from your trusted deployment configuration.
 const expectedPubkey = process.env.ORACELL_PUBLISHER_PUBKEY;
@@ -91,7 +89,7 @@ export const docsSections = [
   {
     id: "verification-flow",
     title: "Verification flow",
-    body: "Fetch a SignedOracleFeed, verify it with a trusted publisher public key, and use injectOracleProof to attach its witness and anchor header to your transaction. The CKB-VM type script locates a raw 184-byte proof or one inside WitnessArgs.input_type/output_type, checks ORCL magic and version, matches the publisher against script args, verifies BIP-340 over SHA-256 of the 88-byte payload, then checks the referenced header hash and height. Script args contain a 32-byte publisher key, optionally followed by a little-endian u64 maximum block lag (default: 2). Freshness is measured against the highest header supplied in header_deps, not an independently queried chain tip. Consumers must apply their own freshness, pair, source, and circuit-breaker policies.",
+    body: "Fetch a SignedOracleFeed, verify it with a trusted publisher public key, and use injectOracleProof to attach its witness and anchor header to your transaction. The CKB-VM type script locates a raw 184-byte proof or one inside WitnessArgs.input_type/output_type, checks ORCL magic and version, matches the publisher against script args, verifies BIP-340 over SHA-256 of the 88-byte payload, then checks the referenced header hash and height. Script args contain a 32-byte publisher key, optionally followed by a little-endian u64 maximum block lag (default: 2). Freshness is measured against the highest header supplied in header_deps, not an independently queried chain tip. Consumers must apply their own freshness, pair, source, and circuit-breaker policies. Phase 1 uses a single BIP-340 publisher. Phase 3 is intended to introduce distributed key generation and threshold Schnorr signing.",
   },
   {
     id: "read-a-price",
@@ -111,7 +109,7 @@ export const docsSections = [
   {
     id: "feed-identifiers",
     title: "Feed Identifiers",
-    body: "Feeds are identified by their pair and pairKey: CKB/USDT → CKB_USDT, BTC/USDT → BTC_USDT, ETH/USDT → ETH_USDT, and SOL/USDT → SOL_USDT. GET /v1/oracle/quote?pair=CKB_USDT returns one SignedOracleFeed. GET /v1/oracle/feeds returns version, publisherPubkey, ckbTip, updatedAtMs, and feeds. GET /v1/oracle/stream emits named feeds events with timestampMs and feeds. The hosted explorer polls its signed snapshot endpoint every 15 seconds; it does not present historical returns or charts that the API does not supply.",
+    body: "Feeds are identified by their pair and pairKey: CKB/USDT → CKB_USDT, BTC/USDT → BTC_USDT, ETH/USDT → ETH_USDT, and SOL/USDT → SOL_USDT. On the hosted API, GET /api/oracle/quote?pair=CKB_USDT returns a SignedOracleFeed and GET /api/oracle/feeds returns the signed snapshot. SDK-compatible /v1/oracle paths resolve to these routes. Only the standalone service exposes the SSE stream. The hosted explorer polls its signed snapshot endpoint every 15 seconds; it does not present historical returns or charts that the API does not supply.",
   },
   {
     id: "payload-structure",
