@@ -44,7 +44,7 @@ npm ci
 npm run dev
 ```
 
-Open [localhost:3000](http://localhost:3000). The frontend defaults to the aggregator at `http://localhost:4001`. For a hosted aggregator, set `NEXT_PUBLIC_ORACELL_AGGREGATOR_URL` in `.env.local` before building. Use an HTTPS URL when hosting the frontend over HTTPS; public environment values are embedded at build time. No API key is required by the aggregator.
+Open [localhost:3000](http://localhost:3000). To serve signed quotes from Next.js, set the server-only `ORACELL_PUBLISHER_PRIVATE_KEY` to a valid 32-byte hex key. Use `NEXT_PUBLIC_ORACELL_AGGREGATOR_URL=http://localhost:4001` in `.env.local` to use the standalone aggregator instead.
 
 ### Production
 
@@ -76,7 +76,7 @@ artifacts/    Desktop and mobile captures with visual comparisons
 
 ## Data and assets
 
-The frontend polls `GET /v1/oracle/feeds` every five seconds using the URL configured by `NEXT_PUBLIC_ORACELL_AGGREGATOR_URL`. `lib/markets.ts` defines the supported market catalog, response validation, and precise decimal display. Unavailable services leave the catalog usable without invented prices; connection interruptions preserve the last received snapshot with a notice. Hosted builds without an aggregator URL do not contact the visitor’s localhost. Historical price returns are not supplied by this endpoint and are not displayed.
+The frontend polls the same-origin `/api/oracle/feeds` every 15 seconds by default. The Vercel function signs on demand using REST price snapshots and a CKB tip header. It requires the server-only `ORACELL_PUBLISHER_PRIVATE_KEY` in Vercel. An explicit `NEXT_PUBLIC_ORACELL_AGGREGATOR_URL` switches the explorer to the standalone service at `/v1/oracle/feeds`, which also offers streaming. Connection interruptions preserve the last received snapshot with a notice. Neither snapshot endpoint supplies historical returns.
 
 Documentation in `lib/docs.ts` follows the implementation in `packages/sdk/` and `contracts/`. The frontend does not verify Schnorr signatures or submit transactions; consuming applications should use a trusted publisher key with the SDK and their deployed CKB verifier. Backend, SDK, and contract builds are separate from the Next.js frontend build.
 

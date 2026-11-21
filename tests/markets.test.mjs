@@ -5,6 +5,7 @@ import {
   formatPrice,
   getMarkets,
   canConnectToAggregator,
+  FEEDS_ENDPOINT,
   feedAge,
 } from "../lib/markets.ts";
 const hex = (bytes) => `0x${"ab".repeat(bytes)}`;
@@ -67,25 +68,9 @@ test("formats scaled integer prices without losing decimal precision", () => {
   assert.equal(formatPrice("18446744073709551615"), "184,467,440,737.09551615");
   assert.equal(formatPrice("1"), "0.00000001");
 });
-test("hosted/static frontend never calls visitor localhost or mixed-content HTTP", () => {
-  assert.equal(
-    canConnectToAggregator({ hostname: "localhost", protocol: "http:" }),
-    true,
-  );
-  assert.equal(
-    canConnectToAggregator({
-      hostname: "oracell.vercel.app",
-      protocol: "https:",
-    }),
-    false,
-  );
-  assert.equal(
-    canConnectToAggregator({
-      hostname: "oracell.vercel.app",
-      protocol: "http:",
-    }),
-    false,
-  );
+test("uses the same-origin hosted endpoint by default", () => {
+  assert.equal(FEEDS_ENDPOINT, "/api/oracle/feeds");
+  assert.equal(canConnectToAggregator({ hostname: "oracell.vercel.app", protocol: "https:" }), true);
 });
 test("feed timestamps show actual age, including stale snapshots", () => {
   assert.equal(feedAge(1000, 6000), "5s ago");
@@ -100,6 +85,7 @@ test("configured HTTPS aggregator is usable from a hosted origin", async () => {
       "https://feeds.example.org/api/";
     const configured = await import("../lib/markets.ts?configured");
     assert.equal(configured.AGGREGATOR_URL, "https://feeds.example.org/api");
+    assert.equal(configured.FEEDS_ENDPOINT, "https://feeds.example.org/api/v1/oracle/feeds");
     assert.equal(
       configured.canConnectToAggregator({
         hostname: "oracell.vercel.app",

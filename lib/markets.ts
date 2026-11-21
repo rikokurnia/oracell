@@ -1,10 +1,12 @@
 import assetLogos from "./asset-logo-sources.json" with { type: "json" };
 
 export const AGGREGATOR_URL = (
-  process.env.NEXT_PUBLIC_ORACELL_AGGREGATOR_URL?.trim() ||
-  "http://localhost:4001"
+  process.env.NEXT_PUBLIC_ORACELL_AGGREGATOR_URL?.trim() || ""
 ).replace(/\/+$/, "");
-export const POLL_INTERVAL_MS = 5_000;
+export const FEEDS_ENDPOINT = AGGREGATOR_URL
+  ? `${AGGREGATOR_URL}/v1/oracle/feeds`
+  : "/api/oracle/feeds";
+export const POLL_INTERVAL_MS = AGGREGATOR_URL ? 5_000 : 15_000;
 export const STALE_AFTER_MS = 30_000;
 
 export const marketCatalog = [
@@ -156,6 +158,7 @@ export function canConnectToAggregator(page: {
   hostname: string;
   protocol: string;
 }): boolean {
+  if (!AGGREGATOR_URL) return true;
   try {
     const url = new URL(AGGREGATOR_URL);
     if (!["http:", "https:"].includes(url.protocol)) return false;

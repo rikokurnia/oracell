@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
-  AGGREGATOR_URL,
+  FEEDS_ENDPOINT,
   POLL_INTERVAL_MS,
   parseFeedsResponse,
   canConnectToAggregator,
@@ -26,13 +26,12 @@ export function useMarketFeeds() {
     let controller: AbortController;
     async function refresh() {
       controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 6_000);
+      const timeout = setTimeout(() => controller.abort(), 11_000);
       try {
         if (!canConnectToAggregator(window.location))
           throw new Error("Aggregator not configured for this origin");
-        const response = await fetch(`${AGGREGATOR_URL}/v1/oracle/feeds`, {
+        const response = await fetch(FEEDS_ENDPOINT, {
           signal: controller.signal,
-          cache: "no-store",
           headers: { Accept: "application/json" },
         });
         if (!response.ok) throw new Error(`Aggregator HTTP ${response.status}`);

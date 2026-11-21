@@ -70,7 +70,7 @@ export default function Markets() {
           ? "Connected · Waiting for signed price feeds."
           : outdated
             ? "Connected · Some feeds have not updated recently."
-            : "Connected · Prices refresh every 5 seconds.";
+            : "Connected · Checking for updated prices.";
   return (
     <Shell
       mode="markets"

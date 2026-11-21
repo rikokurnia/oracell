@@ -111,7 +111,7 @@ export const docsSections = [
   {
     id: "feed-identifiers",
     title: "Feed Identifiers",
-    body: "Feeds are identified by their pair and pairKey: CKB/USDT → CKB_USDT, BTC/USDT → BTC_USDT, ETH/USDT → ETH_USDT, and SOL/USDT → SOL_USDT. GET /v1/oracle/quote?pair=CKB_USDT returns one SignedOracleFeed. GET /v1/oracle/feeds returns version, publisherPubkey, ckbTip, updatedAtMs, and feeds. GET /v1/oracle/stream emits named feeds events with timestampMs and feeds. The explorer polls the snapshot endpoint every five seconds; it does not present historical returns or charts that the API does not supply.",
+    body: "Feeds are identified by their pair and pairKey: CKB/USDT → CKB_USDT, BTC/USDT → BTC_USDT, ETH/USDT → ETH_USDT, and SOL/USDT → SOL_USDT. GET /v1/oracle/quote?pair=CKB_USDT returns one SignedOracleFeed. GET /v1/oracle/feeds returns version, publisherPubkey, ckbTip, updatedAtMs, and feeds. GET /v1/oracle/stream emits named feeds events with timestampMs and feeds. The hosted explorer polls its signed snapshot endpoint every 15 seconds; it does not present historical returns or charts that the API does not supply.",
   },
   {
     id: "payload-structure",
