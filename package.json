@@ -33,9 +33,5 @@
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.0.0",
     "typescript": "^5.7.0"
-  },
-  "build:aggregator": "tsc -p services/aggregator/tsconfig.json",
-  "prebuild": "npm run build:aggregator",
-  "predev": "npm run build:aggregator",
-  "pretypecheck": "npm run build:aggregator"
+  }
 }

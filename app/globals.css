@@ -1379,3 +1379,7 @@ td code {
 .sandbox-measurement { padding: 12px 0; }
 .sandbox-measurement meter { display: block; width: min(360px, 100%); margin: 6px 0; }
 .sandbox-feedback { margin-top: 14px; }
+.sandbox-main {
+  max-width: 980px;
+  grid-template-columns: minmax(0, 1fr);
+}

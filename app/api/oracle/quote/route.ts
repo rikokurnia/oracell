@@ -8,7 +8,12 @@ export function GET(request: Request) {
   const rawPair = new URL(request.url).searchParams.get("pair");
   const pair = rawPair && normalizePairInput(rawPair);
   if (!pair) {
-    return Response.json({ error: "Specify a supported pair, such as CKB_USDT" }, { status: 400 });
+    return Response.json(
+      { error: "Specify a supported pair, such as CKB_USDT" },
+      { status: 400, headers: { "Access-Control-Allow-Origin": "*" } },
+    );
   }
-  return hostedResponse((snapshot) => snapshot.feeds.find((feed) => feed.pair === pair));
+  return hostedResponse((snapshot) =>
+    snapshot.feeds.find((feed) => feed.pair === pair),
+  );
 }

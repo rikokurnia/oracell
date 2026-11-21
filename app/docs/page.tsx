@@ -95,7 +95,27 @@ export default function Docs() {
                 <span>Explore payload signatures and header dependencies.</span>
               </a>
             </div>
-            <Link className="text-link" href="/sandbox">Open security sandbox ↗</Link>
+            <p>
+              <Link className="text-link" href="/sandbox">
+                Open security sandbox ↗
+              </Link>
+            </p>
+            <p>
+              <a
+                className="text-link"
+                href="https://pudge.explorer.nervos.org/transaction/0x14beb0d8c0bc0b2a2f1c4aa788c3171284b4c5443074a28059e234cc5bf0ee90"
+              >
+                View confirmed Pudge proof ↗
+              </a>
+            </p>
+            <p>
+              <a
+                className="text-link"
+                href="https://github.com/rikokurnia/oracell/blob/main/contracts/DEPLOYMENT.md"
+              >
+                Verifier deployment details ↗
+              </a>
+            </p>
           </section>
           <section id="start-with-the-sdk">
             <h2>Start with the SDK</h2>

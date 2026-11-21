@@ -1,23 +1,36 @@
+import { PHASE_ONE_PUBLISHER_PUBKEY } from "@/lib/publisher";
 import { normalizePairInput } from "@/services/aggregator/dist/aggregator";
-import { DEFAULT_AGGREGATOR_URL, OracellClient, decodeOracleWitness, injectOracleProof } from "@/packages/sdk/dist-hosted/index";
+import {
+  DEFAULT_AGGREGATOR_URL,
+  OracellClient,
+  decodeOracleWitness,
+  injectOracleProof,
+} from "@/packages/sdk/dist-hosted/index";
 
 export const runtime = "nodejs";
 export const maxDuration = 10;
 
 export async function GET(request: Request) {
-  const pair = normalizePairInput(new URL(request.url).searchParams.get("pair") ?? "");
-  if (!pair) return Response.json({ error: "Choose a supported market" }, { status: 400 });
+  const pair = normalizePairInput(
+    new URL(request.url).searchParams.get("pair") ?? "",
+  );
+  if (!pair)
+    return Response.json(
+      { error: "Choose a supported market" },
+      { status: 400 },
+    );
 
   const client = new OracellClient({
-    fetchImpl: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(7_000) }),
+    fetchImpl: (input, init) =>
+      fetch(input, { ...init, signal: AbortSignal.timeout(7_000) }),
   });
   const started = performance.now();
   try {
     const quote = await client.getLatestPrice(pair);
     const fetchMs = performance.now() - started;
     const sdkStart = performance.now();
-    // The quote comes from the fixed HTTPS service, not a user-provided host.
-    if (!client.verifyFeed(quote)) throw new Error("Invalid quote signature");
+    if (!client.verifyFeed(quote, PHASE_ONE_PUBLISHER_PUBKEY))
+      throw new Error("Invalid quote signature");
     const tx = injectOracleProof({ witnesses: ["0x"], headerDeps: [] }, quote);
     const witness = tx.witnesses[1];
     const decoded = decodeOracleWitness(witness);
@@ -35,6 +48,12 @@ export async function GET(request: Request) {
       sdkMs: Math.round((performance.now() - sdkStart) * 100) / 100,
     });
   } catch {
-    return Response.json({ error: "The hosted quote or SDK verification failed. Try again shortly." }, { status: 503 });
+    return Response.json(
+      {
+        error:
+          "The hosted quote or SDK verification failed. Try again shortly.",
+      },
+      { status: 503 },
+    );
   }
 }
