@@ -5,11 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
-    "build": "next build",
+    "build": "npm run build:aggregator && next build",
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint .",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "build:aggregator": "tsc -p services/aggregator/tsconfig.json",
+    "predev": "npm run build:aggregator",
+    "pretypecheck": "npm run build:aggregator"
   },
   "dependencies": {
     "@noble/curves": "^1.9.7",
